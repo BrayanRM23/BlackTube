@@ -1,0 +1,76 @@
+/* Estilo del formulario */
+form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    max-width: 400px; /* Ancho máximo del formulario */
+    width: 100%;
+    margin: 0 auto;
+    padding: 30px;
+    background-color: rgba(255, 255, 255, 0.9); /* Fondo blanco semitransparente */
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Sombra para resaltar */
+    text-align: center;
+}
+
+/* Texto de bienvenida */
+#txtBienvenida {
+    font-size: 1.8rem;
+    color: #333;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+/* Etiquetas de texto */
+.txt {
+    font-size: 1rem;
+    color: #555;
+    margin-bottom: 8px;
+    text-align: left;
+    width: 100%; /* Alineado completo al ancho del formulario */
+}
+
+/* Entradas de texto */
+.entry {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1rem;
+    box-sizing: border-box; /* Asegura que padding y bordes no alteren el ancho */
+}
+
+/* Botón de enviar */
+#btnEnviar {
+    background-color: #007bff; /* Azul claro */
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+#btnEnviar:hover {
+    background-color: #0056b3; /* Azul más oscuro al pasar el mouse */
+    transform: translateY(-2px); /* Animación sutil */
+}
+
+/* Botón de registro */
+#forgotPasswordLink {
+    margin-top: 15px;
+    background: none;
+    color: #007bff;
+    border: none;
+    font-size: 0.9rem;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+#forgotPasswordLink:hover {
+    color: #0056b3; /* Azul más oscuro al pasar el mouse */
+}
+
