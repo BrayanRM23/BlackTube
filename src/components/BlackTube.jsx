@@ -13,7 +13,7 @@ function BlackTube() {
   // Obtener los posts de todos los usuarios
   const fetchPosts = async () => {
   try {
-    const response = await fetch("http://localhost:4000/papa/all-posts", {
+    const response = await fetch("https://black-tube-rm.vercel.app/papa/all-posts", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -40,7 +40,7 @@ function BlackTube() {
     }
   
     try {
-      const response = await fetch("http://localhost:4000/papa/filter-posts", {
+      const response = await fetch("https://black-tube-rm.vercel.app/papa/filter-posts", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
