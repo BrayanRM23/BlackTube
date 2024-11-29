@@ -42,9 +42,13 @@ function UserHome() {
       });
 
       const data = await response.json();
+
       if (response.ok) {
         const { uploadUrl, fileName } = data;
-
+        
+        // Verificar en consola si la URL prefirmada se obtuvo correctamente
+        console.log("URL prefirmada obtenida:", uploadUrl);
+        
         // Subir el archivo a S3 usando la URL prefirmada
         const s3Response = await fetch(uploadUrl, {
           method: "PUT",
@@ -62,9 +66,11 @@ function UserHome() {
           fetchFileURLs(); // Actualizar la lista de archivos
         } else {
           alert("Error al subir el archivo a S3.");
+          console.log("Error al subir el archivo a S3:", s3Response);
         }
       } else {
         alert(`Error al obtener la URL prefirmada: ${data.error}`);
+        console.log("Error al obtener la URL prefirmada:", data.error);
       }
     } catch (error) {
       console.error("Error al subir archivo:", error);
