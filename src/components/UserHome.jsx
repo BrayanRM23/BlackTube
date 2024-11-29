@@ -6,26 +6,21 @@ function UserHome() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [fileURLs, setFileURLs] = useState([]);
   const navigate = useNavigate();
-
-  // Cargar el usuario desde LocalStorage
   const currentUser = localStorage.getItem("loggedUser");
 
   useEffect(() => {
-    // Verificar si el usuario está en sesión
     if (!currentUser) {
       alert("Sesión expirada. Por favor, vuelve a iniciar sesión.");
-      navigate("/login");
+      navigate("/");
     } else {
       fetchFileURLs(); // Cargar los archivos al montar el componente
     }
   }, );
 
-  // Manejar la selección del archivo
   const handleFileChange = (event) => {
     setSelectedFile(event.target.files[0]);
   };
 
-  // Subir archivo al servidor
   const handleUpload = async () => {
     if (!selectedFile) {
       alert("Por favor, selecciona un archivo para subir.");
@@ -33,21 +28,43 @@ function UserHome() {
     }
 
     const formData = new FormData();
-    formData.append("file", selectedFile);
     formData.append("username", currentUser);
+    formData.append("fileName", selectedFile.name);
 
     try {
-      const response = await fetch("https://blackback01.vercel.app/papa/files", {
+      // Solicitar al backend la URL prefirmada
+      const response = await fetch("https://blackback01.vercel.app/papa/generate-presigned-url", {
         method: "POST",
-        body: formData,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username: currentUser, fileName: selectedFile.name }),
       });
 
       const data = await response.json();
       if (response.ok) {
-        alert("Archivo subido exitosamente.");
-        fetchFileURLs(); // Actualizar la lista de archivos
+        const { uploadUrl, fileName } = data;
+
+        // Subir el archivo a S3 usando la URL prefirmada
+        const s3Response = await fetch(uploadUrl, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/octet-stream",
+          },
+          body: selectedFile,
+        });
+
+        if (s3Response.ok) {
+          alert("Archivo subido exitosamente.");
+          // Guardar la URL del archivo en la base de datos
+          const fileURL = `https://bucket-page-rm23.s3.amazonaws.com/uploads/${fileName}`;
+          await saveFileURL(fileURL, fileName);
+          fetchFileURLs(); // Actualizar la lista de archivos
+        } else {
+          alert("Error al subir el archivo a S3.");
+        }
       } else {
-        alert(`Error al subir el archivo: ${data.error}`);
+        alert(`Error al obtener la URL prefirmada: ${data.error}`);
       }
     } catch (error) {
       console.error("Error al subir archivo:", error);
@@ -55,7 +72,30 @@ function UserHome() {
     }
   };
 
-  // Obtener las URLs de los archivos del usuario
+  const saveFileURL = async (fileURL, fileName) => {
+    try {
+      const response = await fetch("https://blackback01.vercel.app/papa/files", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: currentUser,
+          fileName: fileName,
+          fileURL: fileURL,
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        alert(`Error al guardar el archivo: ${data.error}`);
+      }
+    } catch (error) {
+      console.error("Error al guardar la URL del archivo:", error);
+      alert("Hubo un problema al guardar el archivo.");
+    }
+  };
+
   const fetchFileURLs = async () => {
     try {
       const response = await fetch("https://blackback01.vercel.app/papa/user-files", {
@@ -78,7 +118,6 @@ function UserHome() {
     }
   };
 
-  // Determinar si es imagen o video por el tipo MIME
   const isImage = (url) => {
     return /\.(jpeg|jpg|png|gif|bmp|webp)$/i.test(url);
   };
@@ -86,7 +125,6 @@ function UserHome() {
   const isVideo = (url) => {
     return /\.(mp4|webm|ogg|mov)$/i.test(url);
   };
-
 
   return (
     <div className="user-home">
