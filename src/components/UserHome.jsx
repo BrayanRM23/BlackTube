@@ -57,7 +57,7 @@ function UserHome() {
         if (s3Response.ok) {
           alert("Archivo subido exitosamente.");
           // Guardar la URL del archivo en la base de datos
-          const fileURL = `https://bucket-page-rm23.s3.amazonaws.com/uploads/${fileName}`;
+          const fileURL = `https://bucket-page-rm23.s3.amazonaws.com/${fileName}`;
           await saveFileURL(fileURL, fileName);
           fetchFileURLs(); // Actualizar la lista de archivos
         } else {
