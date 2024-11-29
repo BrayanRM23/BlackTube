@@ -18,7 +18,10 @@ function UserHome() {
   }, );
 
   const handleFileChange = (event) => {
-    setSelectedFile(event.target.files[0]);
+    const file = event.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+    }
   };
 
   const handleUpload = async () => {
@@ -27,12 +30,8 @@ function UserHome() {
       return;
     }
 
-    const formData = new FormData();
-    formData.append("username", currentUser);
-    formData.append("fileName", selectedFile.name);
-
     try {
-      // Solicitar al backend la URL prefirmada
+      // Solicitar la URL prefirmada
       const response = await fetch("https://blackback01.vercel.app/papa/generate-presigned-url", {
         method: "POST",
         headers: {
@@ -45,32 +44,31 @@ function UserHome() {
 
       if (response.ok) {
         const { uploadUrl, fileName } = data;
-        
-        // Verificar en consola si la URL prefirmada se obtuvo correctamente
-        console.log("URL prefirmada obtenida:", uploadUrl);
-        
+
         // Subir el archivo a S3 usando la URL prefirmada
         const s3Response = await fetch(uploadUrl, {
           method: "PUT",
           headers: {
-            "Content-Type": "application/octet-stream",
+            "Content-Type": selectedFile.type || "application/octet-stream",
           },
           body: selectedFile,
         });
 
         if (s3Response.ok) {
           alert("Archivo subido exitosamente.");
+
           // Guardar la URL del archivo en la base de datos
           const fileURL = `https://bucket-page-rm23.s3.amazonaws.com/${fileName}`;
           await saveFileURL(fileURL, fileName);
-          fetchFileURLs(); // Actualizar la lista de archivos
+
+          // Actualizar la lista de archivos
+          fetchFileURLs();
+          setSelectedFile(null); // Limpiar el archivo seleccionado
         } else {
           alert("Error al subir el archivo a S3.");
-          console.log("Error al subir el archivo a S3:", s3Response);
         }
       } else {
         alert(`Error al obtener la URL prefirmada: ${data.error}`);
-        console.log("Error al obtener la URL prefirmada:", data.error);
       }
     } catch (error) {
       console.error("Error al subir archivo:", error);
@@ -87,13 +85,13 @@ function UserHome() {
         },
         body: JSON.stringify({
           username: currentUser,
-          fileName: fileName,
-          fileURL: fileURL,
+          fileName,
+          fileURL,
         }),
       });
 
-      const data = await response.json();
       if (!response.ok) {
+        const data = await response.json();
         alert(`Error al guardar el archivo: ${data.error}`);
       }
     } catch (error) {
@@ -114,7 +112,7 @@ function UserHome() {
 
       const data = await response.json();
       if (response.ok) {
-        setFileURLs(data); // Actualizar las URLs
+        setFileURLs(data);
       } else {
         alert(`Error al obtener los archivos: ${data.error}`);
       }
@@ -124,13 +122,9 @@ function UserHome() {
     }
   };
 
-  const isImage = (url) => {
-    return /\.(jpeg|jpg|png|gif|bmp|webp)$/i.test(url);
-  };
+  const isImage = (url) => /\.(jpeg|jpg|png|gif|bmp|webp)$/i.test(url);
 
-  const isVideo = (url) => {
-    return /\.(mp4|webm|ogg|mov)$/i.test(url);
-  };
+  const isVideo = (url) => /\.(mp4|webm|ogg|mov)$/i.test(url);
 
   return (
     <div className="user-home">
@@ -140,7 +134,9 @@ function UserHome() {
 
       <div className="upload-section">
         <input type="file" onChange={handleFileChange} />
-        <button onClick={handleUpload}>Subir Archivo</button>
+        <button onClick={handleUpload} disabled={!selectedFile}>
+          {selectedFile ? "Subir Archivo" : "Selecciona un Archivo"}
+        </button>
       </div>
 
       <h2>Archivos Cargados</h2>
@@ -158,9 +154,8 @@ function UserHome() {
                   Tu navegador no soporta el elemento de video.
                 </video>
               ) : (
-                <p>Formato no soportado.</p>
+                <p>Archivo: {file.fileName}</p>
               )}
-              <p>{file.fileName}</p>
             </div>
           ))
         )}
