@@ -15,7 +15,7 @@ function Form({ callback }) {
           return;
         }
       
-        fetch('blackback01.vercel.app/papa/login', {
+        fetch('https://blackback01.vercel.app/papa/login', {
           method: 'POST',
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ username, password })
